@@ -1,0 +1,53 @@
+<!-- 안전 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+
+    <!--폰트어썸-->
+    <script src="https://kit.fontawesome.com/f3c9d07c5d.js"></script>
+
+</head>
+
+<body>
+
+    <div class="popup popup1">
+        <button class="btn_close" onclick="close()">
+            <span></span>
+            <span></span>
+        </button>
+        <div class="cont">
+            <div class="text_box">
+                <i class="fa-solid fa-face-smile"></i>
+                <strong>이 사이트는 안전합니다. <br> 들어가겠습니까?</strong>
+                <div id="URL"></div>
+            </div>
+
+            <div class="btn_box">
+                <div>
+                    <a href='javascript:location.href=text'>YES</a>
+                    <a href="javascript:self.close()">NO</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+<script>
+    let text = window.opener.document.getElementById( "name" ).value;
+    document.getElementById("URL").innerHTML = text
+    // document.getElementById("URL1").innerHTML = text
+    console.log(text);
+</script>
+
+<script>
+    function closepopup() {
+        close();
+    }
+</script>

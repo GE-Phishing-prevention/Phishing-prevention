@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <!-- html 변경 적용 -->
+    <meta http-equiv="Compatible" content="no-cache"/> 
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://code.jquery.com/jquery-3.6.1.js"
+    integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/f3c9d07c5d.js"></script>       <!--폰트어썸-->
+    <script src="https://d3js.org/d3.v4.js"></script>
+
+    <title>실험</title>
+</head>
+
+<script>
+    function printName() {   //url 정보 입력
+        let origin_result = document.getElementById('name').value;
+        document.getElementById("origin_result").innerHTML = origin_result;
+
+        var modify_url = origin_result.split('/', 3);
+        modify_url[2] = String(modify_url[2]).replace('www.','');
+        document.getElementById("modify_result").innerHTML = modify_url[2]; //변수 넣기
+    }    
+</script>
+
+<script>
+
+    var openWin;
+
+    function pushbtn(or_re, mo_url) { 
+        or = or_re.origin_result.innerHTML
+        mo = mo_url.modify_result.innerHTML
+
+        console.log(or,mo);
+        var c_url = or.split('/',3);
+        c_url[1] = '//';
+        c_url = c_url[0] + c_url[1] + c_url[2];
+        c_url = JSON.stringify(c_url);
+        c_url = c_url.replace(/"/g, '');  //DB 읽을수 있는 url
+
+        var xhr = new XMLHttpRequest();
+
+        var r_domain = mo;
+
+        var url = 'http://apis.data.go.kr/B551505/whois/domain_name'; /*URL*/
+        var queryParams = '?' + encodeURIComponent('serviceKey') + '=' + 'cUWf07DL4LpO9A5FA1fWq3vYGsYMKLO1bKVkyYJX1rWeCGciZpn1kyP7l5nwuTfckSvUUuMsdW4f7YuKHrUX%2Bw%3D%3D'; /*Service Key*/
+        queryParams += '&' + encodeURIComponent('query') + '=' + encodeURIComponent(r_domain); /*도메인 이름, http://... 형식 X*/
+        queryParams += '&' + encodeURIComponent('answer') + '=' + encodeURIComponent('JSON'); /**/
+        xhr.open('GET', url + queryParams);
+        xhr.onreadystatechange = function () {
+            if(this.responseText.includes('정상') === true) {
+                    if (this.readyState == 4) {
+                        const myJason = this.response;
+
+                        function getDateObject(key, value) {
+                            if (key === 'regDate') return new Date(value);
+                            return value;
+                    }
+
+                    const obj = JSON.parse(myJason, getDateObject);
+                    regYear = obj.response.whois.krdomain.regDate.getFullYear();
+                    regMonth = obj.response.whois.krdomain.regDate.getMonth() + 1;
+                    regDay = obj.response.whois.krdomain.regDate.getDate();
+
+                    var today = new Date();
+
+                    var year = today.getFullYear();
+                    var month = (today.getMonth()+1);
+                    var day = today.getDate();
+
+                    var totalDay = ((year - regYear) * 365) + ((month - regMonth) * 30) + (day - regDay);
+                    
+                    //  사이트가 생긴지 1년을 기준으로 판단
+                    if (totalDay < 365)
+                    {
+                        openWin = window.open("Popups\\warn.html", "a", "width=610, height=250, left=100, top=50");
+                    }
+                    else
+                    {
+                        openWin = window.open("Popups\\Safe.html", "a", "width=610, height=250, left=100, top=50");
+                    }
+                }
+            }
+            else {
+                var state = 0;
+                console.log("원래 url :" +or+ ", 변경 URL:" +  mo + ", c_url : " + c_url );
+                d3.csv("DataCsv\\urldata.csv", function(CSV) {
+                    for(var i=0; i<CSV.length; i++) {
+                        console.log("확인중...");
+                        if((CSV[i].url == c_url) && (CSV[i].label == "benign")) {
+                            openWin = window.open("Popups\\Safe.html", "a", "width=610, height=250, left=100, top=50");
+                            state = 1;
+                            break;
+                        }
+                        if((CSV[i].url == or) && (CSV[i].label == "malicious")) {
+                            openWin = window.open("Popups\\danger.html", "a", "width=610, height=250, left=100, top=50");
+                            state = 1;
+                            break;
+                        }
+                    }
+                });
+          
+                console.log(state);
+                if(state == 0) {
+                    openWin = window.open("Popups\\warn.html", "a", "width=610, height=250, left=100, top=50");
+                }
+
+
+            }
+        };
+
+        xhr.send('');
+    }
+</script>
+
+<body>
+    <img src="FullLogo.png" width="470" height="70">
+    <h1>입력박스에 Url을 입력해주세요.</h1>
+    <b style="color:rgb(23, 94, 161)">한국 도메인(Url)을 입력해주세요.</b>
+    <h2> [ <input type="text" id="name" onchange="printName()" size=50/>  ]  
+        <button onclick="pushbtn(origin_result, modify_result)">
+            <img class="btm-img" src="PhishingLogo.PNG" height ="18" width="26" />
+        </button> 
+    </h2> 
+
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <div id="origin_result"></div>
+    <div id="origin_result"></div>
+    <div id="origin_result"></div>
+    <div id="modify_result"></div> 
+    <div id="modify_result"></div>
+
+</body>
+</html>
